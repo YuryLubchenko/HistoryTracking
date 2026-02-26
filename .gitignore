@@ -1,0 +1,16 @@
+# Local settings with secrets
+appsettings.Local.json
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# IDE
+.idea/
+.vs/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
