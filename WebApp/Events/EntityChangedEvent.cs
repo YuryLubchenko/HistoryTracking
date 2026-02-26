@@ -1,11 +1,4 @@
-namespace WebApp.Audit.Events;
-
-public enum ActionType
-{
-    Created,
-    Updated,
-    Deleted
-}
+namespace WebApp.Events;
 
 public class EntityChangedEvent
 {

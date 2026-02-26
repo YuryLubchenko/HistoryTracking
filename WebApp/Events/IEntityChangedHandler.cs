@@ -1,4 +1,4 @@
-namespace WebApp.Audit.Events;
+namespace WebApp.Events;
 
 public interface IEntityChangedHandler
 {

@@ -17,4 +17,8 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\HistoryTracking.Audit\HistoryTracking.Audit.csproj" />
+    </ItemGroup>
+
 </Project>

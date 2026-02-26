@@ -1,6 +1,9 @@
 # Local settings with secrets
 appsettings.Local.json
 
+# Claude Code
+.claude/
+
 # Build results
 [Bb]in/
 [Oo]bj/

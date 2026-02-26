@@ -1,12 +1,11 @@
 using LinqToDB;
 using LinqToDB.AspNet;
 using LinqToDB.AspNet.Logging;
-using WebApp.Audit;
-using WebApp.Audit.Events;
-using WebApp.Audit.Repositories;
-using WebApp.Audit.Services;
+using LinqToDB.Data;
+using HistoryTracking.Audit;
 using WebApp.Data;
 using WebApp.Database;
+using WebApp.Events;
 using WebApp.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,15 +22,15 @@ builder.Services.AddLinqToDBContext<AppDataConnection>((provider, options) =>
         .UseDefaultLogging(provider));
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredService<AppDataConnection>());
 
-builder.Services.AddScoped<IHistoryContext, HistoryContext>();
-builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddAudit();
+builder.Services.AddScoped<AuditSubscriber>();
 builder.Services.AddScoped<EntityChangedPublisher>(provider =>
 {
     var publisher = new EntityChangedPublisher();
-    var auditLogService = provider.GetRequiredService<IAuditLogService>();
-    publisher.Subscribe(auditLogService);
+    var auditSubscriber = provider.GetRequiredService<AuditSubscriber>();
+    publisher.Subscribe(auditSubscriber);
     return publisher;
 });
 

@@ -1,10 +1,10 @@
 using LinqToDB;
 using LinqToDB.Mapping;
 
-namespace WebApp.Audit.Entities;
+namespace HistoryTracking.Audit.Entities;
 
 [Table("property_records")]
-public class PropertyRecordEntity
+internal class PropertyRecordEntity
 {
     [PrimaryKey, Identity]
     [Column("id")]

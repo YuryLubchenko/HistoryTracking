@@ -1,17 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
 
-namespace WebApp.Audit.Services;
+namespace HistoryTracking.Audit.Services;
 
-public class PropertyChange
-{
-    public string PropertyName { get; set; } = string.Empty;
-    public string PropertyType { get; set; } = string.Empty;
-    public string OldValue { get; set; }
-    public string NewValue { get; set; }
-}
-
-public static class PropertyComparer
+internal static class PropertyComparer
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{515218A7-46F8-465D-BCC6-A99D65C886CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{C3472224-C85F-45FA-A11D-3C050AE6AC7D}"
@@ -7,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		.gitignore = .gitignore
 		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HistoryTracking.Audit", "HistoryTracking.Audit\HistoryTracking.Audit.csproj", "{A5443247-6EBF-43DF-8667-0EB5C4626950}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +21,9 @@ Global
 		{515218A7-46F8-465D-BCC6-A99D65C886CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{515218A7-46F8-465D-BCC6-A99D65C886CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{515218A7-46F8-465D-BCC6-A99D65C886CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5443247-6EBF-43DF-8667-0EB5C4626950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5443247-6EBF-43DF-8667-0EB5C4626950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5443247-6EBF-43DF-8667-0EB5C4626950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5443247-6EBF-43DF-8667-0EB5C4626950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,14 +1,14 @@
 using LinqToDB;
-using WebApp.Data;
-using WebApp.Audit.Entities;
+using LinqToDB.Data;
+using HistoryTracking.Audit.Entities;
 
-namespace WebApp.Audit.Repositories;
+namespace HistoryTracking.Audit.Repositories;
 
-public class AuditLogRepository : IAuditLogRepository
+internal class AuditLogRepository : IAuditLogRepository
 {
-    private readonly AppDataConnection _db;
+    private readonly DataConnection _db;
 
-    public AuditLogRepository(AppDataConnection db)
+    public AuditLogRepository(DataConnection db)
     {
         _db = db;
     }

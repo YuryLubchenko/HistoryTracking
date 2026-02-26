@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 using LinqToDB;
-using WebApp.Audit.Events;
 using WebApp.Data;
 using WebApp.Entities;
+using WebApp.Events;
 
 namespace WebApp.Repositories;
 

@@ -1,14 +1,12 @@
 using System.Reflection;
 using LinqToDB.Mapping;
-using WebApp.Audit.Entities;
-using WebApp.Audit.Events;
-using WebApp.Audit.Repositories;
-using EventActionType = WebApp.Audit.Events.ActionType;
-using EntityActionType = WebApp.Audit.Entities.ActionType;
+using HistoryTracking.Audit.Entities;
+using HistoryTracking.Audit.Repositories;
+using EntityActionType = HistoryTracking.Audit.Entities.ActionType;
 
-namespace WebApp.Audit.Services;
+namespace HistoryTracking.Audit.Services;
 
-public class AuditLogService : IAuditLogService
+internal class AuditLogService : IAuditLogService
 {
     private readonly IHistoryContext _historyContext;
     private readonly IAuditLogRepository _auditLogRepository;
@@ -19,11 +17,11 @@ public class AuditLogService : IAuditLogService
         _auditLogRepository = auditLogRepository;
     }
 
-    public async Task HandleAsync(EntityChangedEvent entityChangedEvent)
+    public async Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType)
     {
         var actionLogId = await EnsureActionLogExists();
 
-        var entity = entityChangedEvent.OldEntity ?? entityChangedEvent.NewEntity;
+        var entity = oldEntity ?? newEntity;
         var entityName = GetEntityName(entity);
         var entityId = GetEntityId(entity);
 
@@ -32,14 +30,12 @@ public class AuditLogService : IAuditLogService
             ActionLogId = actionLogId,
             EntityName = entityName,
             EntityId = entityId,
-            ActionType = MapActionType(entityChangedEvent.ActionType)
+            ActionType = MapActionType(actionType)
         };
 
         var entityChangeId = await _auditLogRepository.SaveEntityChange(entityChange);
 
-        var propertyChanges = PropertyComparer.Compare(
-            entityChangedEvent.OldEntity,
-            entityChangedEvent.NewEntity);
+        var propertyChanges = PropertyComparer.Compare(oldEntity, newEntity);
 
         if (propertyChanges.Count > 0)
         {
@@ -108,14 +104,14 @@ public class AuditLogService : IAuditLogService
         return 0;
     }
 
-    private static EntityActionType MapActionType(EventActionType eventActionType)
+    private static EntityActionType MapActionType(ActionType actionType)
     {
-        return eventActionType switch
+        return actionType switch
         {
-            EventActionType.Created => EntityActionType.Created,
-            EventActionType.Updated => EntityActionType.Updated,
-            EventActionType.Deleted => EntityActionType.Deleted,
-            _ => throw new ArgumentOutOfRangeException(nameof(eventActionType), eventActionType, null)
+            ActionType.Created => EntityActionType.Created,
+            ActionType.Updated => EntityActionType.Updated,
+            ActionType.Deleted => EntityActionType.Deleted,
+            _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
         };
     }
 }

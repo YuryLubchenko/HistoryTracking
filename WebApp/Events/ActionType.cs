@@ -1,4 +1,4 @@
-namespace WebApp.Audit.Entities;
+namespace WebApp.Events;
 
 public enum ActionType
 {

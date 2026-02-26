@@ -1,6 +1,6 @@
-namespace HistoryTracking.Audit.Entities;
+namespace HistoryTracking.Audit.Services;
 
-internal enum ActionType
+public enum ActionType
 {
     Created,
     Updated,

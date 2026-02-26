@@ -1,8 +1,8 @@
-using WebApp.Audit.Entities;
+using HistoryTracking.Audit.Entities;
 
-namespace WebApp.Audit.Repositories;
+namespace HistoryTracking.Audit.Repositories;
 
-public interface IAuditLogRepository
+internal interface IAuditLogRepository
 {
     Task<long> SaveActionLog(ActionLogEntity actionLog);
     Task<long> SaveEntityChange(EntityRecordEntity entityRecord);

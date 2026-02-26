@@ -1,9 +1,9 @@
 using LinqToDB.Mapping;
 
-namespace WebApp.Audit.Entities;
+namespace HistoryTracking.Audit.Entities;
 
 [Table("action_logs")]
-public class ActionLogEntity
+internal class ActionLogEntity
 {
     [PrimaryKey, Identity]
     [Column("id")]
