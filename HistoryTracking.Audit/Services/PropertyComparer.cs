@@ -39,10 +39,11 @@ internal static class PropertyComparer
                 }
             }
 
+            var effectiveType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             var change = new PropertyChange
             {
                 PropertyName = property.Name,
-                PropertyType = property.PropertyType.FullName ?? property.PropertyType.Name,
+                PropertyType = effectiveType.FullName ?? effectiveType.Name,
                 OldValue = oldValueChanged ? Serialize(oldValue) : null,
                 NewValue = newValueChanged ? Serialize(newValue) : null
             };
