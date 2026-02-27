@@ -13,11 +13,8 @@ internal class PropertyRecordEntity
     [Column("entity_record_id"), NotNull]
     public long EntityRecordId { get; set; }
 
-    [Column("property_name"), NotNull]
-    public string PropertyName { get; set; } = string.Empty;
-
-    [Column("property_type"), NotNull]
-    public string PropertyType { get; set; } = string.Empty;
+    [Column("property_definition_id"), NotNull]
+    public long PropertyDefinitionId { get; set; }
 
     [Column("old_value", DataType = DataType.Text)]
     public string OldValue { get; set; }

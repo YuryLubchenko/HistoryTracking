@@ -25,10 +25,12 @@ internal class AuditLogService : IAuditLogService
         var entityName = GetEntityName(entity);
         var entityId = GetEntityId(entity);
 
+        var entityTypeId = await _auditLogRepository.GetOrCreateEntityTypeIdAsync(entityName);
+
         var entityChange = new EntityRecordEntity
         {
             ActionLogId = actionLogId,
-            EntityName = entityName,
+            EntityTypeId = entityTypeId,
             EntityId = entityId,
             ActionType = MapActionType(actionType)
         };
@@ -39,14 +41,18 @@ internal class AuditLogService : IAuditLogService
 
         if (propertyChanges.Count > 0)
         {
-            var propertyChangeEntities = propertyChanges.Select(pc => new PropertyRecordEntity
+            var propertyChangeEntities = new List<PropertyRecordEntity>();
+            foreach (var pc in propertyChanges)
             {
-                EntityRecordId = entityChangeId,
-                PropertyName = pc.PropertyName,
-                PropertyType = pc.PropertyType,
-                OldValue = pc.OldValue,
-                NewValue = pc.NewValue
-            });
+                var propertyDefinitionId = await _auditLogRepository.GetOrCreatePropertyDefinitionIdAsync(entityTypeId, pc.PropertyName, pc.PropertyType);
+                propertyChangeEntities.Add(new PropertyRecordEntity
+                {
+                    EntityRecordId = entityChangeId,
+                    PropertyDefinitionId = propertyDefinitionId,
+                    OldValue = pc.OldValue,
+                    NewValue = pc.NewValue
+                });
+            }
 
             await _auditLogRepository.SavePropertyChanges(propertyChangeEntities);
         }

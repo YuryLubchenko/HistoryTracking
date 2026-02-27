@@ -12,8 +12,8 @@ internal class EntityRecordEntity
     [Column("action_log_id"), NotNull]
     public long ActionLogId { get; set; }
 
-    [Column("entity_name"), NotNull]
-    public string EntityName { get; set; } = string.Empty;
+    [Column("entity_type_id"), NotNull]
+    public long EntityTypeId { get; set; }
 
     [Column("entity_id"), NotNull]
     public long EntityId { get; set; }
