@@ -24,7 +24,7 @@ builder.Services.AddLinqToDBContext<AppDataConnection>((provider, options) =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredService<AppDataConnection>());
 
-builder.Services.AddAudit();
+builder.Services.AddAudit(b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
 builder.Services.AddScoped<AuditSubscriber>();
 builder.Services.AddScoped(provider =>
 {

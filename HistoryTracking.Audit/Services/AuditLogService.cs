@@ -1,5 +1,6 @@
 using System.Reflection;
 using LinqToDB.Mapping;
+using HistoryTracking.Audit.Configuration;
 using HistoryTracking.Audit.Entities;
 using HistoryTracking.Audit.Repositories;
 using EntityActionType = HistoryTracking.Audit.Entities.ActionType;
@@ -10,19 +11,26 @@ internal class AuditLogService : IAuditLogService
 {
     private readonly IHistoryContext _historyContext;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly AuditModel _auditModel;
 
-    public AuditLogService(IHistoryContext historyContext, IAuditLogRepository auditLogRepository)
+    public AuditLogService(IHistoryContext historyContext, IAuditLogRepository auditLogRepository, AuditModel auditModel)
     {
         _historyContext = historyContext;
         _auditLogRepository = auditLogRepository;
+        _auditModel = auditModel;
     }
 
     public async Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType)
     {
+        var entity = oldEntity ?? newEntity;
+        var entityConfig = _auditModel.GetEntityConfig(entity.GetType());
+
+        if (entityConfig?.IsIgnored == true)
+            return;
+
         var actionLogId = await EnsureActionLogExists();
 
-        var entity = oldEntity ?? newEntity;
-        var entityName = GetEntityName(entity);
+        var entityName = entityConfig?.OverrideName ?? GetEntityName(entity);
         var entityId = GetEntityId(entity);
 
         var entityTypeId = await _auditLogRepository.GetOrCreateEntityTypeIdAsync(entityName);
@@ -44,7 +52,12 @@ internal class AuditLogService : IAuditLogService
             var propertyChangeEntities = new List<PropertyRecordEntity>();
             foreach (var pc in propertyChanges)
             {
-                var propertyDefinitionId = await _auditLogRepository.GetOrCreatePropertyDefinitionIdAsync(entityTypeId, pc.PropertyName, pc.PropertyType);
+                var propConfig = entityConfig?.GetPropertyConfig(pc.PropertyName);
+                if (propConfig?.IsIgnored == true)
+                    continue;
+
+                var propertyName = propConfig?.OverrideName ?? pc.PropertyName;
+                var propertyDefinitionId = await _auditLogRepository.GetOrCreatePropertyDefinitionIdAsync(entityTypeId, propertyName, pc.PropertyType);
                 propertyChangeEntities.Add(new PropertyRecordEntity
                 {
                     EntityRecordId = entityChangeId,
@@ -54,7 +67,8 @@ internal class AuditLogService : IAuditLogService
                 });
             }
 
-            await _auditLogRepository.SavePropertyChanges(propertyChangeEntities);
+            if (propertyChangeEntities.Count > 0)
+                await _auditLogRepository.SavePropertyChanges(propertyChangeEntities);
         }
     }
 
