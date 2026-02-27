@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using LinqToDB.Mapping;
 
 namespace HistoryTracking.Audit.Services;
 
@@ -19,10 +20,8 @@ internal static class PropertyComparer
 
         foreach (var property in properties)
         {
-            if (property.Name == "Id")
-            {
+            if (!IsMappedColumn(property))
                 continue;
-            }
 
             var oldValue = oldEntity != null ? property.GetValue(oldEntity) : null;
             var newValue = newEntity != null ? property.GetValue(newEntity) : null;
@@ -51,7 +50,20 @@ internal static class PropertyComparer
             changes.Add(change);
         }
 
+
         return changes;
+    }
+
+    private static bool IsMappedColumn(PropertyInfo property)
+    {
+        var columnAttribute = property.GetCustomAttribute<ColumnAttribute>();
+        if (columnAttribute == null || columnAttribute is NotColumnAttribute)
+            return false;
+
+        if (property.GetCustomAttribute<PrimaryKeyAttribute>() != null)
+            return false;
+
+        return true;
     }
 
     private static string Serialize(object value) =>
