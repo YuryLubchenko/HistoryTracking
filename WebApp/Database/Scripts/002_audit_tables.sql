@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS property_records (
     entity_record_id BIGINT NOT NULL REFERENCES entity_records(id),
     property_name VARCHAR(255) NOT NULL,
     property_type VARCHAR(255) NOT NULL,
-    old_value JSONB,
-    new_value JSONB
+    old_value TEXT,
+    new_value TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_entity_records_action_log_id ON entity_records(action_log_id);

@@ -1,15 +1,10 @@
+using System.Globalization;
 using System.Reflection;
-using System.Text.Json;
 
 namespace HistoryTracking.Audit.Services;
 
 internal static class PropertyComparer
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = false
-    };
-
     public static List<PropertyChange> Compare(object oldEntity, object newEntity)
     {
         var changes = new List<PropertyChange>();
@@ -48,8 +43,8 @@ internal static class PropertyComparer
             {
                 PropertyName = property.Name,
                 PropertyType = property.PropertyType.FullName ?? property.PropertyType.Name,
-                OldValue = oldValueChanged ? SerializeToJsonb(oldValue) : null,
-                NewValue = newValueChanged ? SerializeToJsonb(newValue) : null
+                OldValue = oldValueChanged ? Serialize(oldValue) : null,
+                NewValue = newValueChanged ? Serialize(newValue) : null
             };
 
             changes.Add(change);
@@ -58,14 +53,12 @@ internal static class PropertyComparer
         return changes;
     }
 
-    private static string SerializeToJsonb(object value)
-    {
-        if (value == null)
+    private static string Serialize(object value) =>
+        value switch
         {
-            return JsonSerializer.Serialize(new { value = (object)null }, JsonOptions);
-        }
-
-        var wrapper = new Dictionary<string, object> { { "value", value } };
-        return JsonSerializer.Serialize(wrapper, JsonOptions);
-    }
+            null => null,
+            DateTime dt => dt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => value.ToString()
+        };
 }

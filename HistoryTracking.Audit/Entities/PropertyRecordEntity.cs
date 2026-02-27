@@ -19,9 +19,9 @@ internal class PropertyRecordEntity
     [Column("property_type"), NotNull]
     public string PropertyType { get; set; } = string.Empty;
 
-    [Column("old_value", DataType = DataType.BinaryJson)]
+    [Column("old_value", DataType = DataType.Text)]
     public string OldValue { get; set; }
 
-    [Column("new_value", DataType = DataType.BinaryJson)]
+    [Column("new_value", DataType = DataType.Text)]
     public string NewValue { get; set; }
 }

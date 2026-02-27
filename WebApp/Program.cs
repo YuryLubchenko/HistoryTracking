@@ -26,7 +26,7 @@ builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredServi
 
 builder.Services.AddAudit();
 builder.Services.AddScoped<AuditSubscriber>();
-builder.Services.AddScoped<EntityChangedPublisher>(provider =>
+builder.Services.AddScoped(provider =>
 {
     var publisher = new EntityChangedPublisher();
     var auditSubscriber = provider.GetRequiredService<AuditSubscriber>();
