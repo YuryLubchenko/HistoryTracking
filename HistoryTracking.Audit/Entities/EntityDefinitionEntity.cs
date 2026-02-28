@@ -2,8 +2,8 @@ using LinqToDB.Mapping;
 
 namespace HistoryTracking.Audit.Entities;
 
-[Table("entity_types", Schema = EntityDefaults.Schema)]
-internal class EntityTypeEntity
+[Table("entity_definitions", Schema = EntityDefaults.Schema)]
+internal class EntityDefinitionEntity
 {
     [PrimaryKey, Identity]
     [Column("id")]

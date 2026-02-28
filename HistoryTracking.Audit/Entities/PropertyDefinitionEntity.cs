@@ -9,8 +9,8 @@ internal class PropertyDefinitionEntity
     [Column("id")]
     public long Id { get; set; }
 
-    [Column("entity_type_id"), NotNull]
-    public long EntityTypeId { get; set; }
+    [Column("entity_definition_id"), NotNull]
+    public long EntityDefinitionId { get; set; }
 
     [Column("property_name"), NotNull]
     public string PropertyName { get; set; } = string.Empty;

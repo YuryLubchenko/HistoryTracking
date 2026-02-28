@@ -38,7 +38,7 @@ internal class AuditLogService : IAuditLogService
         var entityChange = new EntityRecordEntity
         {
             ActionLogId = actionLogId,
-            EntityTypeId = entityTypeId,
+            EntityDefinitionId = entityTypeId,
             EntityId = entityId,
             ActionType = MapActionType(actionType)
         };
