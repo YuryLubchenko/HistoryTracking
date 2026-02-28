@@ -2,7 +2,7 @@ using LinqToDB.Mapping;
 
 namespace HistoryTracking.Audit.Entities;
 
-[Table("action_logs")]
+[Table("action_logs", Schema = EntityDefaults.Schema)]
 internal class ActionLogEntity
 {
     [PrimaryKey, Identity]
