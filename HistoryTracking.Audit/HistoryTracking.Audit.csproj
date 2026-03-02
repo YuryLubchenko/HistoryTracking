@@ -3,6 +3,8 @@
   <ItemGroup>
     <PackageReference Include="linq2db" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.FeatureManagement" />
   </ItemGroup>
 
 </Project>

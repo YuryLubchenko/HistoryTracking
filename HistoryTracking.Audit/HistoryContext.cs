@@ -1,5 +1,7 @@
 using HistoryTracking.Audit.Entities;
 using HistoryTracking.Audit.Repositories;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace HistoryTracking.Audit;
 
@@ -7,11 +9,15 @@ internal class HistoryContext : IAuditScopeFactory
 {
     private readonly Stack<AuditScope> _scopes = new();
     private readonly IAuditLogRepository _repository;
+    private readonly IOptions<AuditOptions> _auditOptions;
+    private readonly IFeatureManager _featureManager;
     private long? _anonymousActionLogId;
 
-    public HistoryContext(IAuditLogRepository repository)
+    public HistoryContext(IAuditLogRepository repository, IOptions<AuditOptions> auditOptions, IFeatureManager featureManager)
     {
         _repository = repository;
+        _auditOptions = auditOptions;
+        _featureManager = featureManager;
     }
 
     public async Task<long> GetOrCreateActionLogIdAsync()
@@ -29,6 +35,10 @@ internal class HistoryContext : IAuditScopeFactory
 
     public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
     {
+        var toggleName = _auditOptions.Value.FeatureToggleName;
+        if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
+            return NullAuditScope.Instance;
+
         var actionDefinitionId = await _repository
             .GetOrCreateActionDefinitionIdAsync(details.Code, details.Name);
 

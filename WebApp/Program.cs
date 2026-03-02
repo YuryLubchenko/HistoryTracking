@@ -3,6 +3,7 @@ using LinqToDB.AspNet;
 using LinqToDB.AspNet.Logging;
 using LinqToDB.Data;
 using HistoryTracking.Audit;
+using Microsoft.FeatureManagement;
 using WebApp.Data;
 using WebApp.Database;
 using WebApp.Events;
@@ -24,7 +25,11 @@ builder.Services.AddLinqToDBContext<AppDataConnection>((provider, options) =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredService<AppDataConnection>());
 
-builder.Services.AddAudit(b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
+builder.Services.AddFeatureManagement();
+
+builder.Services.AddAudit(
+    options => options.FeatureToggleName = "AuditEnabled",
+    b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
 builder.Services.AddScoped<AuditSubscriber>();
 builder.Services.AddScoped(provider =>
 {

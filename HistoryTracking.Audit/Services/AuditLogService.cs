@@ -3,6 +3,8 @@ using LinqToDB.Mapping;
 using HistoryTracking.Audit.Configuration;
 using HistoryTracking.Audit.Entities;
 using HistoryTracking.Audit.Repositories;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using EntityActionType = HistoryTracking.Audit.Entities.ActionType;
 
 namespace HistoryTracking.Audit.Services;
@@ -12,16 +14,29 @@ internal class AuditLogService : IAuditLogService
     private readonly IAuditScopeFactory _auditScopeFactory;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly AuditModel _auditModel;
+    private readonly IOptions<AuditOptions> _auditOptions;
+    private readonly IFeatureManager _featureManager;
 
-    public AuditLogService(IAuditScopeFactory auditScopeFactory, IAuditLogRepository auditLogRepository, AuditModel auditModel)
+    public AuditLogService(
+        IAuditScopeFactory auditScopeFactory,
+        IAuditLogRepository auditLogRepository,
+        AuditModel auditModel,
+        IOptions<AuditOptions> auditOptions,
+        IFeatureManager featureManager)
     {
         _auditScopeFactory = auditScopeFactory;
         _auditLogRepository = auditLogRepository;
         _auditModel = auditModel;
+        _auditOptions = auditOptions;
+        _featureManager = featureManager;
     }
 
     public async Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType)
     {
+        var toggleName = _auditOptions.Value.FeatureToggleName;
+        if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
+            return;
+
         var entity = oldEntity ?? newEntity;
         var entityConfig = _auditModel.GetEntityConfig(entity.GetType());
 
