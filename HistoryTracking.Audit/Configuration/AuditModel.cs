@@ -4,7 +4,13 @@ internal class AuditModel
 {
     private readonly Dictionary<Type, AuditEntityConfig> _configs;
 
-    internal AuditModel(Dictionary<Type, AuditEntityConfig> configs) => _configs = configs;
+    internal string SchemaName { get; }
+
+    internal AuditModel(Dictionary<Type, AuditEntityConfig> configs, string schemaName)
+    {
+        _configs = configs;
+        SchemaName = schemaName;
+    }
 
     internal AuditEntityConfig GetEntityConfig(Type type) =>
         _configs.TryGetValue(type, out var cfg) ? cfg : null;

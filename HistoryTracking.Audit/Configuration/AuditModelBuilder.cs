@@ -35,14 +35,14 @@ internal class AuditModelBuilder : IAuditModelBuilder
         return this;
     }
 
-    internal AuditModel Build()
+    internal AuditModel Build(string schemaName)
     {
         var configs = new Dictionary<Type, AuditEntityConfig>();
         foreach (var (type, builder) in _entityBuilders)
         {
             configs[type] = BuildEntityConfig(builder);
         }
-        return new AuditModel(configs);
+        return new AuditModel(configs, schemaName);
     }
 
     private static AuditEntityConfig BuildEntityConfig(IEntityAuditBuilderInternal builder)

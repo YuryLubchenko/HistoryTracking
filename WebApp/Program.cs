@@ -28,8 +28,8 @@ builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredServi
 builder.Services.AddFeatureManagement();
 
 builder.Services.AddAudit(
-    options => options.FeatureToggleName = "AuditEnabled",
-    b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
+    builder.Configuration.GetSection("Audit"),
+    configure: b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
 builder.Services.AddScoped<AuditSubscriber>();
 builder.Services.AddScoped(provider =>
 {
