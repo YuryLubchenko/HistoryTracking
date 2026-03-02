@@ -16,8 +16,8 @@ public static class ServiceCollectionExtensions
         configure?.Invoke(modelBuilder);
         services.AddSingleton(modelBuilder.Build());
 
-        services.AddScoped<IHistoryContext, HistoryContext>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAuditScopeFactory, HistoryContext>();
         services.AddScoped<IAuditLogService, AuditLogService>();
 
         return services;

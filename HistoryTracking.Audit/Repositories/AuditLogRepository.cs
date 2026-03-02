@@ -48,4 +48,12 @@ internal class AuditLogRepository : IAuditLogRepository
             new DataParameter("propertyName", propertyName),
             new DataParameter("propertyType", propertyType));
     }
+
+    public async Task<long> GetOrCreateActionDefinitionIdAsync(string code, string name)
+    {
+        return await _db.ExecuteAsync<long>(
+            $"INSERT INTO {EntityDefaults.Schema}.action_definitions (code, name) VALUES (@code, @name) ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name RETURNING id",
+            new DataParameter("code", code),
+            new DataParameter("name", name));
+    }
 }

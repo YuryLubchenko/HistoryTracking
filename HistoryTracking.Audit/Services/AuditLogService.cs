@@ -9,13 +9,13 @@ namespace HistoryTracking.Audit.Services;
 
 internal class AuditLogService : IAuditLogService
 {
-    private readonly IHistoryContext _historyContext;
+    private readonly IAuditScopeFactory _auditScopeFactory;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly AuditModel _auditModel;
 
-    public AuditLogService(IHistoryContext historyContext, IAuditLogRepository auditLogRepository, AuditModel auditModel)
+    public AuditLogService(IAuditScopeFactory auditScopeFactory, IAuditLogRepository auditLogRepository, AuditModel auditModel)
     {
-        _historyContext = historyContext;
+        _auditScopeFactory = auditScopeFactory;
         _auditLogRepository = auditLogRepository;
         _auditModel = auditModel;
     }
@@ -28,7 +28,7 @@ internal class AuditLogService : IAuditLogService
         if (entityConfig?.IsIgnored == true)
             return;
 
-        var actionLogId = await EnsureActionLogExists();
+        var actionLogId = await _auditScopeFactory.GetOrCreateActionLogIdAsync();
 
         var entityName = entityConfig?.OverrideName ?? GetEntityName(entity);
         var entityId = GetEntityId(entity);
@@ -70,24 +70,6 @@ internal class AuditLogService : IAuditLogService
             if (propertyChangeEntities.Count > 0)
                 await _auditLogRepository.SavePropertyChanges(propertyChangeEntities);
         }
-    }
-
-    private async Task<long> EnsureActionLogExists()
-    {
-        if (_historyContext.ActionLogId.HasValue)
-        {
-            return _historyContext.ActionLogId.Value;
-        }
-
-        var actionLog = new ActionLogEntity
-        {
-            Timestamp = DateTime.UtcNow
-        };
-
-        var actionLogId = await _auditLogRepository.SaveActionLog(actionLog);
-        _historyContext.ActionLogId = actionLogId;
-
-        return actionLogId;
     }
 
     private static string GetEntityName(object entity)
