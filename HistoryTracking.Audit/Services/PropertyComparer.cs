@@ -26,25 +26,25 @@ internal static class PropertyComparer
             var oldValue = oldEntity != null ? property.GetValue(oldEntity) : null;
             var newValue = newEntity != null ? property.GetValue(newEntity) : null;
 
-            var oldValueChanged = oldEntity != null;
-            var newValueChanged = newEntity != null;
+            if (oldValue == null && newValue == null)
+                continue;
 
             if (oldEntity != null && newEntity != null)
             {
-                var areEqual = Equals(oldValue, newValue);
-                if (areEqual)
-                {
+                if (Equals(oldValue, newValue))
                     continue;
-                }
             }
+
+            var oldValueSerialized = Serialize(oldValue);
+            var newValueSerialized = Serialize(newValue);
 
             var effectiveType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             var change = new PropertyChange
             {
                 PropertyName = property.Name,
                 PropertyType = effectiveType.FullName ?? effectiveType.Name,
-                OldValue = oldValueChanged ? Serialize(oldValue) : null,
-                NewValue = newValueChanged ? Serialize(newValue) : null
+                OldValue = oldValueSerialized,
+                NewValue = newValueSerialized
             };
 
             changes.Add(change);
