@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         configure?.Invoke(modelBuilder);
         services.AddSingleton(modelBuilder.Build(schemaName));
 
+        services.AddSingleton<AuditDefinitionCache>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditScopeFactory, HistoryContext>();
         services.AddScoped<IAuditLogService, AuditLogService>();
