@@ -5,9 +5,10 @@ namespace HistoryTracking.Audit;
 
 internal class AuditScopeFactory : IAuditScopeFactory
 {
-    private readonly Stack<AuditScope> _scopes = new();
+    private static readonly AsyncLocal<AuditScope> CurrentScope = new();
+
     private readonly IAuditLogRepository _repository;
-    private long? _anonymousActionLogId;
+    private AuditScope _anonymousScope;
 
     public AuditScopeFactory(IAuditLogRepository repository)
     {
@@ -16,15 +17,14 @@ internal class AuditScopeFactory : IAuditScopeFactory
 
     public async Task<long> GetOrCreateActionLogIdAsync()
     {
-        if (_scopes.Count > 0)
-            return _scopes.Peek().ActionLogId;
-
-        if (_anonymousActionLogId.HasValue)
-            return _anonymousActionLogId.Value;
+        var current = CurrentScope.Value ?? _anonymousScope;
+        if (current != null)
+            return current.ActionLogId;
 
         var actionLog = new ActionLogEntity { Timestamp = DateTime.UtcNow };
-        _anonymousActionLogId = await _repository.SaveActionLog(actionLog);
-        return _anonymousActionLogId.Value;
+        var actionLogId = await _repository.SaveActionLog(actionLog);
+        _anonymousScope = new AuditScope(actionLogId, static () => { });
+        return actionLogId;
     }
 
     public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
@@ -32,9 +32,8 @@ internal class AuditScopeFactory : IAuditScopeFactory
         var actionDefinitionId = await _repository
             .GetOrCreateActionDefinitionIdAsync(details.Code, details.Name);
 
-        long? parentActionLogId = _scopes.Count > 0
-            ? _scopes.Peek().ActionLogId
-            : _anonymousActionLogId;
+        var parentContextScope = CurrentScope.Value;
+        long? parentActionLogId = (parentContextScope ?? _anonymousScope)?.ActionLogId;
 
         var actionLog = new ActionLogEntity
         {
@@ -44,8 +43,8 @@ internal class AuditScopeFactory : IAuditScopeFactory
         };
 
         var actionLogId = await _repository.SaveActionLog(actionLog);
-        var scope = new AuditScope(actionLogId, () => _scopes.TryPop(out _));
-        _scopes.Push(scope);
+        var scope = new AuditScope(actionLogId, () => CurrentScope.Value = parentContextScope);
+        CurrentScope.Value = scope;
         return scope;
     }
 }
