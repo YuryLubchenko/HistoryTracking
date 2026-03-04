@@ -46,8 +46,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<AuditDefinitionCache>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-        services.AddScoped<IAuditScopeFactory, HistoryContext>();
-        services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IAuditScopeFactory, AuditScopeFactory>();
+        services.AddScoped<IAuditWriterService, AuditWriterService>();
 
         return services;
     }

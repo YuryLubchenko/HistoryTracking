@@ -5,17 +5,17 @@ namespace WebApp.Events;
 
 public class AuditSubscriber : IEntityChangedHandler
 {
-    private readonly IAuditLogService _auditLogService;
+    private readonly IAuditWriterService _auditWriterService;
 
-    public AuditSubscriber(IAuditLogService auditLogService)
+    public AuditSubscriber(IAuditWriterService auditWriterService)
     {
-        _auditLogService = auditLogService;
+        _auditWriterService = auditWriterService;
     }
 
     public async Task HandleAsync(EntityChangedEvent entityChangedEvent)
     {
         var actionType = MapActionType(entityChangedEvent.ActionType);
-        await _auditLogService.HandleEntityChangedAsync(
+        await _auditWriterService.HandleEntityChangedAsync(
             entityChangedEvent.OldEntity,
             entityChangedEvent.NewEntity,
             actionType);

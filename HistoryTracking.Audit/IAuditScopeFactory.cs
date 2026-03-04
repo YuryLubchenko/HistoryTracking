@@ -1,7 +1,7 @@
 namespace HistoryTracking.Audit;
 
-public interface IAuditScopeFactory
+internal interface IAuditScopeFactory
 {
     Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details);
-    internal Task<long> GetOrCreateActionLogIdAsync();
+    Task<long> GetOrCreateActionLogIdAsync();
 }

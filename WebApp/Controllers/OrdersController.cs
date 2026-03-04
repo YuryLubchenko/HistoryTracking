@@ -1,4 +1,5 @@
 using HistoryTracking.Audit;
+using HistoryTracking.Audit.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Entities;
 using WebApp.Mappers;
@@ -12,12 +13,12 @@ namespace WebApp.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IRepository<OrderEntity> _repository;
-    private readonly IAuditScopeFactory _auditContext;
+    private readonly IAuditWriterService _auditWriter;
 
-    public OrdersController(IRepository<OrderEntity> repository, IAuditScopeFactory auditContext)
+    public OrdersController(IRepository<OrderEntity> repository, IAuditWriterService auditWriter)
     {
         _repository   = repository;
-        _auditContext = auditContext;
+        _auditWriter = auditWriter;
     }
 
     [HttpGet]
@@ -50,7 +51,7 @@ public class OrdersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Order>> Create(Order model)
     {
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "101", Name = "CreateOrder" });
 
         var entity = OrderMapper.ToEntity(model);
@@ -66,7 +67,7 @@ public class OrdersController : ControllerBase
         if (id != model.Id)
             return BadRequest();
 
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "102", Name = "UpdateOrder" });
 
         var entity = OrderMapper.ToEntity(model);
@@ -80,7 +81,7 @@ public class OrdersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "103", Name = "DeleteOrder" });
 
         var deleted = await _repository.Delete(id);

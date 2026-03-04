@@ -1,4 +1,5 @@
 using HistoryTracking.Audit;
+using HistoryTracking.Audit.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Entities;
 using WebApp.Mappers;
@@ -12,12 +13,12 @@ namespace WebApp.Controllers;
 public class ClientsController : ControllerBase
 {
     private readonly IRepository<ClientEntity> _repository;
-    private readonly IAuditScopeFactory _auditContext;
+    private readonly IAuditWriterService _auditWriter;
 
-    public ClientsController(IRepository<ClientEntity> repository, IAuditScopeFactory auditContext)
+    public ClientsController(IRepository<ClientEntity> repository, IAuditWriterService auditWriter)
     {
         _repository   = repository;
-        _auditContext = auditContext;
+        _auditWriter = auditWriter;
     }
 
     [HttpGet]
@@ -42,7 +43,7 @@ public class ClientsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Client>> Create(Client model)
     {
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "001", Name = "CreateClient" });
 
         var entity = ClientMapper.ToEntity(model);
@@ -58,7 +59,7 @@ public class ClientsController : ControllerBase
         if (id != model.Id)
             return BadRequest();
 
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "002", Name = "UpdateClient" });
 
         var entity = ClientMapper.ToEntity(model);
@@ -72,7 +73,7 @@ public class ClientsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        using var scope = await _auditContext.CreateScopeAsync(
+        using var scope = await _auditWriter.CreateScopeAsync(
             new AuditScopeDetails { Code = "003", Name = "DeleteClient" });
 
         var deleted = await _repository.Delete(id);

@@ -9,7 +9,7 @@ using EntityActionType = HistoryTracking.Audit.Entities.ActionType;
 
 namespace HistoryTracking.Audit.Services;
 
-internal class AuditLogService : IAuditLogService
+internal class AuditWriterService : IAuditWriterService
 {
     private readonly IAuditScopeFactory _auditScopeFactory;
     private readonly IAuditLogRepository _auditLogRepository;
@@ -17,7 +17,7 @@ internal class AuditLogService : IAuditLogService
     private readonly IOptions<AuditOptions> _auditOptions;
     private readonly IFeatureManager _featureManager;
 
-    public AuditLogService(
+    public AuditWriterService(
         IAuditScopeFactory auditScopeFactory,
         IAuditLogRepository auditLogRepository,
         AuditModel auditModel,
@@ -29,6 +29,15 @@ internal class AuditLogService : IAuditLogService
         _auditModel = auditModel;
         _auditOptions = auditOptions;
         _featureManager = featureManager;
+    }
+
+    public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
+    {
+        var toggleName = _auditOptions.Value.FeatureToggleName;
+        if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
+            return NullAuditScope.Instance;
+
+        return await _auditScopeFactory.CreateScopeAsync(details);
     }
 
     public async Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType)
