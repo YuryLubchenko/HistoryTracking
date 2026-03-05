@@ -2,7 +2,7 @@ using LinqToDB.Mapping;
 
 namespace HistoryTracking.Audit.Entities;
 
-[Table("property_definitions", Schema = EntityDefaults.Schema)]
+[Table("hist_property_definitions")]
 internal class PropertyDefinitionEntity
 {
     [PrimaryKey, Identity]

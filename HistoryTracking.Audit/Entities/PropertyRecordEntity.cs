@@ -3,7 +3,7 @@ using LinqToDB.Mapping;
 
 namespace HistoryTracking.Audit.Entities;
 
-[Table("property_records", Schema = EntityDefaults.Schema)]
+[Table("hist_property_records")]
 internal class PropertyRecordEntity
 {
     [PrimaryKey, Identity]

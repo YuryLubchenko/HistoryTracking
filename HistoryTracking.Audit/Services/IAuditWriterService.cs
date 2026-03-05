@@ -4,7 +4,7 @@ namespace HistoryTracking.Audit.Services;
 
 public interface IAuditWriterService
 {
-    Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details);
+    Task<IAuditScope> CreateScopeAsync(long clientId, AuditScopeDetails details);
 
-    Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType);
+    Task HandleEntityChangedAsync<T>(long clientId, T oldEntity, T newEntity, ActionType actionType);
 }

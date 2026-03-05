@@ -1,5 +1,8 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
 using WebApp.Data;
 using WebApp.Entities;
 using WebApp.Events;
@@ -35,12 +38,41 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         return entities;
     }
 
+    public Task<long> NextIdAsync()
+    {
+        var tableName = typeof(T).GetCustomAttribute<TableAttribute>()!.Name;
+        return _db.ExecuteAsync<long>(
+            $"SELECT nextval(pg_get_serial_sequence('{tableName}', 'id'))");
+    }
+
     public async Task<long> Add(T entity)
     {
-        var id = await _db.InsertWithInt64IdentityAsync(entity);
-        entity.Id = id;
+        long id;
 
-        await _publisher.PublishAsync(new EntityChangedEvent
+        if (entity.Id > 0)
+        {
+            var tableName = typeof(T).GetCustomAttribute<TableAttribute>()!.Name;
+            var mappedCols = typeof(T).GetProperties()
+                .Select(p => (Property: p, Col: p.GetCustomAttribute<ColumnAttribute>()))
+                .Where(x => x.Col?.Name != null)
+                .ToList();
+
+            var colNames   = string.Join(", ", mappedCols.Select(x => x.Col!.Name));
+            var paramNames = string.Join(", ", mappedCols.Select((x, i) => $"@p{i}"));
+            var sql = $"INSERT INTO {tableName} ({colNames}) OVERRIDING SYSTEM VALUE VALUES ({paramNames}) RETURNING id";
+            var parameters = mappedCols
+                .Select((x, i) => new DataParameter($"p{i}", x.Property.GetValue(entity)))
+                .ToArray();
+
+            id = await new CommandInfo(_db, sql, parameters).ExecuteAsync<long>();
+        }
+        else
+        {
+            id = await _db.InsertWithInt64IdentityAsync(entity);
+            entity.Id = id;
+        }
+
+        await _publisher.PublishAsync(new EntityChangedEvent<T>
         {
             ActionType = ActionType.Created,
             OldEntity = null,
@@ -58,7 +90,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
         if (rowsAffected > 0)
         {
-            await _publisher.PublishAsync(new EntityChangedEvent
+            await _publisher.PublishAsync(new EntityChangedEvent<T>
             {
                 ActionType = ActionType.Updated,
                 OldEntity = oldEntity,
@@ -77,7 +109,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
         if (rowsAffected > 0 && oldEntity != null)
         {
-            await _publisher.PublishAsync(new EntityChangedEvent
+            await _publisher.PublishAsync(new EntityChangedEvent<T>
             {
                 ActionType = ActionType.Deleted,
                 OldEntity = oldEntity,

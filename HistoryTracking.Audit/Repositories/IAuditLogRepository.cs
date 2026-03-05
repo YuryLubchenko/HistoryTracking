@@ -9,5 +9,4 @@ internal interface IAuditLogRepository
     Task SavePropertyChanges(IEnumerable<PropertyRecordEntity> propertyChanges);
     Task<long> GetOrCreateEntityTypeIdAsync(string name);
     Task<long> GetOrCreatePropertyDefinitionIdAsync(long entityTypeId, string propertyName, string propertyType);
-    Task<long> GetOrCreateActionDefinitionIdAsync(string code, string name);
 }

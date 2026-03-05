@@ -1,11 +1,8 @@
-using LinqToDB.Data;
 using HistoryTracking.Audit.Configuration;
-using HistoryTracking.Audit.Entities;
 using HistoryTracking.Audit.Repositories;
 using HistoryTracking.Audit.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace HistoryTracking.Audit;
 
@@ -38,13 +35,12 @@ public static class ServiceCollectionExtensions
         var startupOptions = new AuditOptions();
         configurationSection?.Bind(startupOptions);
         configureOptions?.Invoke(startupOptions);
-        var schemaName = startupOptions.DatabaseSchemaName ?? EntityDefaults.Schema;
+        var schemaName = startupOptions.DatabaseSchemaName;
 
         var modelBuilder = new AuditModelBuilder();
         configure?.Invoke(modelBuilder);
         services.AddSingleton(modelBuilder.Build(schemaName));
 
-        services.AddSingleton<AuditDefinitionCache>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditScopeFactory, AuditScopeFactory>();
         services.AddScoped<IAuditWriterService, AuditWriterService>();

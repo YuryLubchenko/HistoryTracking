@@ -1,6 +1,8 @@
+using WebApp.Entities;
+
 namespace WebApp.Events;
 
-public interface IEntityChangedHandler
+public interface IEntityChangedHandler<T> where T : BaseEntity
 {
-    Task HandleAsync(EntityChangedEvent entityChangedEvent);
+    Task HandleAsync(EntityChangedEvent<T> entityChangedEvent);
 }

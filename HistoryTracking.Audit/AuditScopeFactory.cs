@@ -14,17 +14,15 @@ internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
         _repository = repository;
     }
 
-    public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
+    public async Task<AuditScope> CreateScopeAsync(long clientId, AuditScopeDetails details)
     {
-        var actionDefinitionId = await _repository
-            .GetOrCreateActionDefinitionIdAsync(details.Code, details.Name);
-
         var parentScope = _scope;
 
         var actionLog = new ActionLogEntity
         {
+            ClientId           = clientId,
             Timestamp          = DateTime.UtcNow,
-            ActionDefinitionId = actionDefinitionId,
+            ActionTypeId       = details.ActionTypeId,
             ParentActionLogId  = parentScope?.ActionLogId
         };
 
@@ -36,17 +34,17 @@ internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
         return scope;
     }
 
-    public async Task<long> GetOrCreateActionLogIdAsync()
+    public async Task<AuditScope> GetOrCreateActionLogIdAsync(long clientId)
     {
         if (_scope != null)
-            return _scope.ActionLogId;
+            return _scope;
 
-        var actionLog = new ActionLogEntity { Timestamp = DateTime.UtcNow };
+        var actionLog = new ActionLogEntity { ClientId = clientId, Timestamp = DateTime.UtcNow };
         var actionLogId = await _repository.SaveActionLog(actionLog);
 #pragma warning disable IDISP003 // false positive: _scope is null here, guarded by the early return above
         _scope ??= new AuditScope(actionLogId, static () => { });
 #pragma warning restore IDISP003
-        return actionLogId;
+        return _scope;
     }
 
     public void Dispose() => _scope?.Dispose();

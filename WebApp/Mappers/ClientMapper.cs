@@ -10,9 +10,7 @@ public static class ClientMapper
         var model = new Client
         {
             Id = entity.Id,
-            Name = entity.Name,
-            Email = entity.Email,
-            Phone = entity.Phone
+            Name = entity.Name
         };
 
         return model;
@@ -23,9 +21,7 @@ public static class ClientMapper
         var entity = new ClientEntity
         {
             Id = model.Id,
-            Name = model.Name,
-            Email = model.Email,
-            Phone = model.Phone
+            Name = model.Name
         };
 
         return entity;

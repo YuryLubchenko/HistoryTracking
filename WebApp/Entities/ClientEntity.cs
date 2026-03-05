@@ -10,11 +10,8 @@ public class ClientEntity : BaseEntity
     public override long Id { get; set; }
 
     [Column("name"), NotNull]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; }
 
-    [Column("email")]
-    public string Email { get; set; }
-
-    [Column("phone")]
-    public string Phone { get; set; }
+    [Column("disabled")]
+    public bool Disabled { get; set; }
 }

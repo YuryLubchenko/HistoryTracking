@@ -6,6 +6,7 @@ using HistoryTracking.Audit;
 using Microsoft.FeatureManagement;
 using WebApp.Data;
 using WebApp.Database;
+using WebApp.Entities;
 using WebApp.Events;
 using WebApp.Repositories;
 
@@ -28,16 +29,10 @@ builder.Services.AddScoped<DataConnection>(provider => provider.GetRequiredServi
 builder.Services.AddFeatureManagement();
 
 builder.Services.AddAudit(
-    builder.Configuration.GetSection("Audit"),
+    options => { options.FeatureToggleName = "AuditEnabled"; },
     configure: b => b.ApplyConfigurationsFromAssembly(typeof(Program).Assembly));
-builder.Services.AddScoped<AuditSubscriber>();
-builder.Services.AddScoped(provider =>
-{
-    var publisher = new EntityChangedPublisher();
-    var auditSubscriber = provider.GetRequiredService<AuditSubscriber>();
-    publisher.Subscribe(auditSubscriber);
-    return publisher;
-});
+builder.Services.AddScoped<IEntityChangedHandler<BaseEntity>, AuditSubscriber>();
+builder.Services.AddScoped<EntityChangedPublisher>();
 
 var app = builder.Build();
 

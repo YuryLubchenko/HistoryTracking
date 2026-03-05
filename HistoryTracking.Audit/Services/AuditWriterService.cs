@@ -31,16 +31,16 @@ internal class AuditWriterService : IAuditWriterService
         _featureManager = featureManager;
     }
 
-    public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
+    public async Task<IAuditScope> CreateScopeAsync(long clientId, AuditScopeDetails details)
     {
         var toggleName = _auditOptions.Value.FeatureToggleName;
         if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
             return NullAuditScope.Instance;
 
-        return await _auditScopeFactory.CreateScopeAsync(details);
+        return await _auditScopeFactory.CreateScopeAsync(clientId, details);
     }
 
-    public async Task HandleEntityChangedAsync(object oldEntity, object newEntity, ActionType actionType)
+    public async Task HandleEntityChangedAsync<T>(long clientId, T oldEntity, T newEntity, ActionType actionType)
     {
         var toggleName = _auditOptions.Value.FeatureToggleName;
         if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
@@ -52,7 +52,7 @@ internal class AuditWriterService : IAuditWriterService
         if (entityConfig?.IsIgnored == true)
             return;
 
-        var actionLogId = await _auditScopeFactory.GetOrCreateActionLogIdAsync();
+        var currentScope = await _auditScopeFactory.GetOrCreateActionLogIdAsync(clientId);
 
         var entityName = entityConfig?.OverrideName ?? GetEntityName(entity);
         var entityId = GetEntityId(entity);
@@ -61,7 +61,7 @@ internal class AuditWriterService : IAuditWriterService
 
         var entityChange = new EntityRecordEntity
         {
-            ActionLogId = actionLogId,
+            ActionLogId = currentScope.ActionLogId,
             EntityDefinitionId = entityTypeId,
             EntityId = entityId,
             ActionType = MapActionType(actionType)

@@ -12,6 +12,6 @@ public class AppDataConnection : DataConnection
     }
 
     public ITable<ClientEntity> Clients => this.GetTable<ClientEntity>();
-    public ITable<OrderEntity> Orders => this.GetTable<OrderEntity>();
-    public ITable<OrderItemEntity> OrderItems => this.GetTable<OrderItemEntity>();
+
+    public ITable<ContactEntity> Contacts => this.GetTable<ContactEntity>();
 }

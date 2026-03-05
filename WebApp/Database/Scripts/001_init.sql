@@ -1,21 +1,12 @@
 CREATE TABLE IF NOT EXISTS clients (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(50)
+    disabled boolean not null
 );
 
-CREATE TABLE IF NOT EXISTS orders (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    client_id BIGINT NOT NULL REFERENCES clients(id),
-    order_date TIMESTAMP NOT NULL,
-    total_amount DECIMAL(18,2) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS order_items (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    order_id BIGINT NOT NULL REFERENCES orders(id),
-    product_name VARCHAR(255) NOT NULL,
-    quantity INT NOT NULL,
-    unit_price DECIMAL(18,2) NOT NULL
-);
+create table if not exists contacts (
+    id bigint generated always as identity primary key,
+    client_id bigint not null references clients(id) on DELETE cascade on update cascade,
+    contact_type bigint not null,
+    value text not null
+)
