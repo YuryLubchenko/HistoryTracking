@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using HistoryTracking.Audit.Entities;
 using HistoryTracking.Audit.Repositories;
 
@@ -6,8 +7,7 @@ namespace HistoryTracking.Audit;
 internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
 {
     private readonly IAuditLogRepository _repository;
-
-    private AuditScope _scope;
+    private readonly ConcurrentDictionary<long, AuditScope> _scopes = new();
 
     public AuditScopeFactory(IAuditLogRepository repository)
     {
@@ -16,36 +16,48 @@ internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
 
     public async Task<AuditScope> CreateScopeAsync(long clientId, AuditScopeDetails details)
     {
-        var parentScope = _scope;
+        _scopes.TryGetValue(clientId, out var parentScope);
 
         var actionLog = new ActionLogEntity
         {
-            ClientId           = clientId,
-            Timestamp          = DateTime.UtcNow,
-            ActionTypeId       = details.ActionTypeId,
-            ParentActionLogId  = parentScope?.ActionLogId
+            ClientId          = clientId,
+            Timestamp         = DateTime.UtcNow,
+            ActionTypeId      = details.ActionTypeId,
+            ParentActionLogId = parentScope?.ActionLogId
         };
 
         var actionLogId = await _repository.SaveActionLog(actionLog);
-#pragma warning disable IDISP003 // parentScope is captured and restored on dispose; no scope is abandoned
-        var scope = new AuditScope(actionLogId, () => _scope = parentScope);
-        _scope = scope;
+#pragma warning disable IDISP003
+        var scope = new AuditScope(actionLogId, () =>
+        {
+            if (parentScope != null)
+                _scopes[clientId] = parentScope;
+            else
+                _scopes.TryRemove(clientId, out _);
+        });
 #pragma warning restore IDISP003
+        _scopes[clientId] = scope;
         return scope;
     }
 
     public async Task<AuditScope> GetOrCreateActionLogIdAsync(long clientId)
     {
-        if (_scope != null)
-            return _scope;
+        if (_scopes.TryGetValue(clientId, out var existing))
+            return existing;
 
         var actionLog = new ActionLogEntity { ClientId = clientId, Timestamp = DateTime.UtcNow };
         var actionLogId = await _repository.SaveActionLog(actionLog);
-#pragma warning disable IDISP003 // false positive: _scope is null here, guarded by the early return above
-        _scope ??= new AuditScope(actionLogId, static () => { });
+#pragma warning disable IDISP003
+        var scope = new AuditScope(actionLogId, static () => { });
 #pragma warning restore IDISP003
-        return _scope;
+        _scopes[clientId] = scope;
+        return scope;
     }
 
-    public void Dispose() => _scope?.Dispose();
+    public void Dispose()
+    {
+        foreach (var scope in _scopes.Values)
+            scope.Dispose();
+        _scopes.Clear();
+    }
 }
