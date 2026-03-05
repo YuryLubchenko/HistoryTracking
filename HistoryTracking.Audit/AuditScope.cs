@@ -1,6 +1,6 @@
 namespace HistoryTracking.Audit;
 
-internal class AuditScope : IAuditScope
+internal sealed class AuditScope : IAuditScope
 {
     private readonly Action _onDispose;
     private bool _disposed;

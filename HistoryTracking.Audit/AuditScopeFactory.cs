@@ -3,29 +3,15 @@ using HistoryTracking.Audit.Repositories;
 
 namespace HistoryTracking.Audit;
 
-internal class AuditScopeFactory : IAuditScopeFactory, IDisposable
+internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
 {
-    private static readonly AsyncLocal<AuditScope> CurrentScope = new();
-
     private readonly IAuditLogRepository _repository;
 
-    private AuditScope _anonymousScope;
+    private AuditScope _scope;
 
     public AuditScopeFactory(IAuditLogRepository repository)
     {
         _repository = repository;
-    }
-
-    public async Task<long> GetOrCreateActionLogIdAsync()
-    {
-        var current = CurrentScope.Value ?? _anonymousScope;
-        if (current != null)
-            return current.ActionLogId;
-
-        var actionLog = new ActionLogEntity { Timestamp = DateTime.UtcNow };
-        var actionLogId = await _repository.SaveActionLog(actionLog);
-        _anonymousScope = new AuditScope(actionLogId, static () => { });
-        return actionLogId;
     }
 
     public async Task<IAuditScope> CreateScopeAsync(AuditScopeDetails details)
@@ -33,21 +19,35 @@ internal class AuditScopeFactory : IAuditScopeFactory, IDisposable
         var actionDefinitionId = await _repository
             .GetOrCreateActionDefinitionIdAsync(details.Code, details.Name);
 
-        var parentContextScope = CurrentScope.Value;
-        long? parentActionLogId = (parentContextScope ?? _anonymousScope)?.ActionLogId;
+        var parentScope = _scope;
 
         var actionLog = new ActionLogEntity
         {
             Timestamp          = DateTime.UtcNow,
             ActionDefinitionId = actionDefinitionId,
-            ParentActionLogId  = parentActionLogId
+            ParentActionLogId  = parentScope?.ActionLogId
         };
 
         var actionLogId = await _repository.SaveActionLog(actionLog);
-        var scope = new AuditScope(actionLogId, () => CurrentScope.Value = parentContextScope);
-        CurrentScope.Value = scope;
+#pragma warning disable IDISP003 // parentScope is captured and restored on dispose; no scope is abandoned
+        var scope = new AuditScope(actionLogId, () => _scope = parentScope);
+        _scope = scope;
+#pragma warning restore IDISP003
         return scope;
     }
 
-    public void Dispose() => _anonymousScope?.Dispose();
+    public async Task<long> GetOrCreateActionLogIdAsync()
+    {
+        if (_scope != null)
+            return _scope.ActionLogId;
+
+        var actionLog = new ActionLogEntity { Timestamp = DateTime.UtcNow };
+        var actionLogId = await _repository.SaveActionLog(actionLog);
+#pragma warning disable IDISP003 // false positive: _scope is null here, guarded by the early return above
+        _scope ??= new AuditScope(actionLogId, static () => { });
+#pragma warning restore IDISP003
+        return actionLogId;
+    }
+
+    public void Dispose() => _scope?.Dispose();
 }
