@@ -3,11 +3,12 @@ using HistoryTracking.Audit.Repositories;
 
 namespace HistoryTracking.Audit;
 
-internal class AuditScopeFactory : IAuditScopeFactory
+internal class AuditScopeFactory : IAuditScopeFactory, IDisposable
 {
     private static readonly AsyncLocal<AuditScope> CurrentScope = new();
 
     private readonly IAuditLogRepository _repository;
+
     private AuditScope _anonymousScope;
 
     public AuditScopeFactory(IAuditLogRepository repository)
@@ -47,4 +48,6 @@ internal class AuditScopeFactory : IAuditScopeFactory
         CurrentScope.Value = scope;
         return scope;
     }
+
+    public void Dispose() => _anonymousScope?.Dispose();
 }
