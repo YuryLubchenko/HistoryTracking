@@ -69,7 +69,7 @@ internal class AuditWriterService : IAuditWriterService
 
         var entityChangeId = await _auditLogRepository.SaveEntityChange(entityChange);
 
-        var propertyChanges = PropertyComparer.Compare(oldEntity, newEntity);
+        var propertyChanges = PropertyComparer.Compare(oldEntity, newEntity, entityConfig);
 
         if (propertyChanges.Count > 0)
         {

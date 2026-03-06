@@ -31,4 +31,5 @@ internal class AuditPropertyConfig
 {
     internal string OverrideName { get; init; }
     internal bool IsIgnored { get; init; }
+    internal bool IsAlwaysLoged { get; init; }
 }

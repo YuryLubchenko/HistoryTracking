@@ -56,7 +56,8 @@ internal class AuditModelBuilder : IAuditModelBuilder
                 kvp => new AuditPropertyConfig
                 {
                     OverrideName = kvp.Value.OverrideName,
-                    IsIgnored = kvp.Value.IsIgnored
+                    IsIgnored    = kvp.Value.IsIgnored,
+                    IsAlwaysLoged    = kvp.Value.IsAlwaysLogged
                 })
         };
     }

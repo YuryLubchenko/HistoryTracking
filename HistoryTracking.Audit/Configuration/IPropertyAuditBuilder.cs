@@ -4,4 +4,5 @@ public interface IPropertyAuditBuilder
 {
     IPropertyAuditBuilder HasName(string name);
     IPropertyAuditBuilder Ignore();
+    IPropertyAuditBuilder AlwaysLog();
 }
