@@ -1,6 +1,8 @@
 using HistoryTracking.Audit.Configuration;
+using HistoryTracking.Audit.Controllers;
 using HistoryTracking.Audit.Repositories;
 using HistoryTracking.Audit.Services;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,6 +46,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditScopeFactory, AuditScopeFactory>();
         services.AddScoped<IAuditWriterService, AuditWriterService>();
+        services.AddScoped<IAuditQueryService, AuditQueryService>();
+
+        services.AddMvcCore()
+            .ConfigureApplicationPartManager(manager =>
+                manager.ApplicationParts.Add(new AssemblyPart(typeof(AuditController).Assembly)));
 
         return services;
     }
