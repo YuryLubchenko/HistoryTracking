@@ -16,10 +16,9 @@ internal class AuditLogRepository : IAuditLogRepository
         _schemaName = auditModel.SchemaName;
     }
 
-    public async Task<long> SaveActionLog(ActionLogEntity actionLog)
+    public async Task SaveActionLog(ActionLogEntity actionLog)
     {
-        var id = await _db.InsertWithInt64IdentityAsync(actionLog, schemaName: _schemaName);
-        return id;
+        actionLog.Id = await _db.InsertWithInt64IdentityAsync(actionLog, schemaName: _schemaName);
     }
 
     public async Task<long> SaveEntityChange(EntityRecordEntity entityRecord)

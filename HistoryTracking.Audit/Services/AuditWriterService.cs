@@ -34,7 +34,7 @@ internal class AuditWriterService : IAuditWriterService
     public async Task<IAuditScope> CreateScopeAsync(long clientId, AuditScopeDetails details)
     {
         var toggleName = _auditOptions.Value.FeatureToggleName;
-        if (!string.IsNullOrEmpty(toggleName) && !await _featureManager.IsEnabledAsync(toggleName))
+        if (string.IsNullOrEmpty(toggleName) || !await _featureManager.IsEnabledAsync(toggleName))
             return NullAuditScope.Instance;
 
         return await _auditScopeFactory.CreateScopeAsync(clientId, details);
@@ -52,7 +52,7 @@ internal class AuditWriterService : IAuditWriterService
         if (entityConfig?.IsIgnored == true)
             return;
 
-        var currentScope = await _auditScopeFactory.GetOrCreateActionLogIdAsync(clientId);
+        var currentScope = await _auditScopeFactory.GetOrCreateActionScopeAsync(clientId);
 
         var entityName = entityConfig?.OverrideName ?? GetEntityName(entity);
         var entityId = GetEntityId(entity);

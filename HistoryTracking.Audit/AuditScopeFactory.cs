@@ -26,9 +26,9 @@ internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
             ParentActionLogId = parentScope?.ActionLogId
         };
 
-        var actionLogId = await _repository.SaveActionLog(actionLog);
+        await _repository.SaveActionLog(actionLog);
 #pragma warning disable IDISP003
-        var scope = new AuditScope(actionLogId, () =>
+        var scope = new AuditScope(actionLog.Id, () =>
         {
             if (parentScope != null)
                 _scopes[clientId] = parentScope;
@@ -40,15 +40,15 @@ internal sealed class AuditScopeFactory : IAuditScopeFactory, IDisposable
         return scope;
     }
 
-    public async Task<AuditScope> GetOrCreateActionLogIdAsync(long clientId)
+    public async Task<AuditScope> GetOrCreateActionScopeAsync(long clientId)
     {
         if (_scopes.TryGetValue(clientId, out var existing))
             return existing;
 
         var actionLog = new ActionLogEntity { ClientId = clientId, Timestamp = DateTime.UtcNow };
-        var actionLogId = await _repository.SaveActionLog(actionLog);
+        await _repository.SaveActionLog(actionLog);
 #pragma warning disable IDISP003
-        var scope = new AuditScope(actionLogId, static () => { });
+        var scope = new AuditScope(actionLog.Id, static () => { });
 #pragma warning restore IDISP003
         _scopes[clientId] = scope;
         return scope;
